@@ -22,7 +22,7 @@ These days I'm a Senior Software Engineer at [Miva Open University](https://miva
 
 ## What I'm into
 
-Consensus algorithms and the machinery of blockchains. Storage engines and commit logs. Observability that actually helps you debug instead of just looking pretty. And lately, AI tools with graph shaped interfaces instead of linear ones. I hold an M.Sc in Financial Engineering from WorldQuant University, a B.Sc in Electrical/Electronic Engineering from the University of Lagos, and a KCNA certification.
+Consensus algorithms and the machinery of blockchains. Storage engines and commit logs. Observability that actually helps you debug instead of just looking pretty. And lately, AI tools with graph shaped interfaces instead of linear ones. I hold an M.Sc in Financial Engineering, and a B.Sc in Electrical/Electronic Engineering.
 
 I write here about the systems I build and the rabbit holes I fall into.
 
