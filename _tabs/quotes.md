@@ -1,8 +1,17 @@
 ---
 # the default layout is 'page'
-icon: fas fa-info-circle
+icon: fas fa-quote-left
 order: 5
 ---
 
-> Add Markdown syntax content to file `_tabs/about.md`{: .filepath } and it will show up on this page.
-{: .prompt-tip }
+<!-- TODO(seki): replace/extend with your own collection. Format: blockquote + attribution. -->
+
+Words that stuck with me.
+
+> Curiosity at its finest worst.
+>
+> <cite>me, apparently</cite>
+
+> What I cannot create, I do not understand.
+>
+> <cite>Richard Feynman</cite>
