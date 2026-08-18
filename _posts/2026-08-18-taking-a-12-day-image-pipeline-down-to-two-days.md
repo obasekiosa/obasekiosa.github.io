@@ -93,14 +93,14 @@ The progression, one table:
 
 ```
 python3 -m venv .venv
-.venv/bin/pip install torch ultralytics easyocr simple-lama-inpainting boto3 opencv-python pillow numpy
-export LAMA_MODEL=~/models/lama/big-lama.pt
-export WATERMARK_MODELS_DIR=~/models
+.venv/bin/pip install torch ultralytics easyocr simple-lama-inpainting opencv-python pillow numpy
+export LAMA_MODEL=/absolute/path/to/big-lama.pt
+export WATERMARK_MODELS_DIR=/absolute/path/to/models
 .venv/bin/python tests/bench_parallel.py --res 960x1200 --n 40
 .venv/bin/python tests/calibrate_real.py <image_folder> 0.45 0.4 cuda 1 0.7
 ```
 
-Models live in `~/models` so nothing downloads at runtime. The calibration script reads real images from the scraper bucket (MinIO at localhost:9000, credentials in `.env.resources`) and reports the YOLO versus OCR split, the confidence distribution, and the skip OCR savings per threshold.
+Point the env vars at wherever you keep the model weights so nothing downloads at runtime. The calibration script reads real images from any folder and reports the YOLO versus OCR split, the confidence distribution, and the skip OCR savings per threshold. Download a sample of production images and feed them in, that is the whole point.
 
 ## The strategic core
 
