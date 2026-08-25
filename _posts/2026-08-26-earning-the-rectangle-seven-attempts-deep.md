@@ -121,19 +121,78 @@ Porting it into the production tool surfaced four bugs worth naming because each
 
 ## Every attempt side by side
 
-Named, timed, priced, and judged on output. Runtimes marked measured come from the actual batch runs; ones marked est. are derived from them, because every attempt here spends nearly all its time inside the YOLO detector and scales with how many detection passes it makes:
+First, the machines, because every image operation attempt spends nearly all its time inside the YOLO detector and inherits the same throughput curve:
 
-| attempt | what it added | RTX 4070, 8 GB | CPU only, 20 cores | rented 24 GB card | cost for 700K | visual result |
-|---|---|---|---|---|---|---|
-| The Opaque Sticker | median fill over one detection pass | ~3 img/s (est.) | ~0.35 img/s (est.) | no faster, detector bound | free | flat tan sticker, zero transparency |
-| The Measured Veil | alpha estimation and the opacity ladder | ~3 img/s (est.) | ~0.35 img/s (est.) | no faster | free | transparency matches the real marks |
-| The Glyph Sampler | text color from the brightest 20 percent | ~3 img/s (est.) | ~0.35 img/s (est.) | no faster | free | badge case fixed to a near white panel |
-| The Stroke Neutralizer | guarded 21 pixel median patch | ~2.8 img/s (est.) | ~0.32 img/s (est.) | no faster | free | ghost strokes gone |
-| The Exact Inversion | per pixel background recovery, pure CPU math | under 1 s/img | under 1 s/img | irrelevant, already CPU bound | free | dark streaks, noise amplified up to 30 times |
-| The Rotation Union | three detection passes, masks unioned | 2.0 to 2.3 img/s (measured) | 0.25 img/s (measured, the CPU bug) | no faster | free, 3.5 to 4 days | vertical strips fully covered |
-| The Locked Recipe | guards, device fix, production port | 2.0 to 2.3 img/s (measured) | 0.25 img/s (measured) | no faster | free, 3.5 to 4 days | a deliberate watermark band, bit stable |
+| hardware | VRAM | class | recipe throughput | what changes |
+|---|---|---|---|---|
+| CPU only, 20 cores | n/a | the accident | 0.25 img/s (measured) | how the silent fallback ran |
+| RTX 4070 laptop | 8 GB | baseline, all measurements here | 2.0 to 2.3 img/s (measured) | fits entirely, no crops |
+| RX 7900 XTX | 24 GB | consumer AMD | ~2 to 2.5 img/s (est.) | works through ROCm after setup tax |
+| RTX 4090 | 24 GB | Ada consumer | ~2.5 to 3 img/s (est.) | detector faster, CPU floor takes over |
+| L40S | 48 GB | Ada datacenter | ~2.5 to 3 img/s (est.) | same ceiling, you pay for idle VRAM |
+| A100 | 80 GB | Ampere datacenter | ~2.5 to 3 img/s (est.) | no benefit, detector never gets large |
+| H100 | 80 GB | Hopper datacenter | ~2.5 to 3 img/s (est.) | no benefit on this workload |
+| RTX 5090 | 32 GB | Blackwell consumer | ~2.5 to 3 img/s (est.) | same CPU bound ceiling |
 
-Three things the table makes obvious. First, every image operation attempt is essentially free; the detector is the entire budget, so doubling detection passes doubles cost and nothing else matters. Second, a bigger GPU buys nothing on any row except the diffusion challengers in [part four](/posts/what-the-rectangle-could-not-beat/), because YOLO at this resolution barely loads an 8 GB card. Third, quality improvements were free upgrades: the jump from sticker to locked recipe changed the pixels completely without changing the bill.
+The flattening above roughly 2.5 images per second is not GPU weakness, it is JPEG decode, preprocessing, and OpenCV work on the host. Beyond a 4090 class card the pipeline is CPU bound, which is why datacenter cards buy nothing here. The 24 GB and up tier only earns its price on the diffusion challengers in [part four](/posts/what-the-rectangle-could-not-beat/).
+
+Now the iterations themselves. The repository holds forty five attempt directories across ten families, every rectangle iteration gets its own row, and both tables below are generated from the same facts viewed two ways.
+
+**Every attempt in trial order**, oldest first, dated by folder creation time:
+
+| tried | iteration | name | what it tested | visual result |
+|---|---|---|---|---|
+| Aug 22 | `clean_v5`, `clean_v1`, `clean_v2`, `clean_v4` | The Inpainting Runs | LaMa pipeline generations on this corpus | clean walls, invented window fills |
+| Aug 23 | `morph`, `morph_v2`, `morph_simple` | The Probes | morphology alone to isolate marks | masks too ragged to build on |
+| Aug 23 | `morph_transparent` | The Transparent Probe | soft alpha edges on those masks | halos everywhere |
+| Aug 23 | `replicate` | The Template Check | cross image alpha template stability | templates too noisy to trust |
+| Aug 23 | `unmix` | The Decomposition Try | UNMIX style layer separation | unusable at JPEG quality |
+| Aug 23 | `rect_algo/v01` to `v03` | The Geometry Sketches | hand drawn rectangle placement rules | boxes drifted off the marks |
+| Aug 23 | `rect_algo/v04_tri` | The Triangle Rule | triangular coverage heuristics | overcovers, eats photo edges |
+| Aug 23 | `rect_algo/v05_round` | The Rounded Panel | softer rectangle aesthetics | looked nice, still missed verticals |
+| Aug 23 | `rect_algo/v06_user_script` | The Borrowed Script | a community script's geometry | wrong color basis for these stamps |
+| Aug 23 | `rect_algo/v07_glyph_masks` | Glyph First | paint per glyph box instead of union | choppy panels, seams between letters |
+| Aug 23 | `simple_morph_t/v01` to `v07` | The Opaque Sticker era | median fill, seven tuning rounds | text gone, looks pasted on |
+| Aug 23 | `simple_morph_t/v08_simple_transparent` | First Transparency | blend instead of fill | right idea, rough color |
+| Aug 23 | `exact_invert/v01_flat` | Flat Alpha Inversion | one alpha everywhere | streaks from edge pixels |
+| Aug 23 | `exact_invert/v02_perpixel` | Per Pixel Inversion | template derived alpha map | noise amplified up to 30 times |
+| Aug 23 | `template_match_lama/v01` | The Hybrid, First Pass | template match plus LaMa on strokes | promising on flat marks only |
+| Aug 23 | `simple_morph_t/v09_one_color` | One Color Panel | single constant color per mark | uniform, but opacity unsolved |
+| Aug 23 | `simple_morph_t/v10_alpha_ladder` | The Ladder, Part One | opacities 0.40 to 0.85 side by side | below 0.90 always traceable |
+| Aug 23 | `simple_morph_t/v11_alpha_ladder` | The Ladder, Part Two | opacities 0.86 to 1.00 | 0.94 chosen, locked forever |
+| Aug 24 | `simple_morph_t/v12_batch40_a94` | The Forty | first full 40 image batch at 0.94 | exposed badge ghost and half detected verticals |
+| Aug 24 | `simple_morph_t/v13_batch40_a94_v2` | The Glyph Sampler | brightest 20 percent text color | badge case fixed |
+| Aug 24 | `simple_morph_t/v14_batch40_a94_v2` | The Locked Recipe | rotations, sampler, patch, 0.94 | deliberate band, all failures closed |
+| Aug 24 | `simple_morph_t/v15_fast3_a94` | The Speed Check | locked recipe timing on 3 images | 2.0 to 2.3 img/s confirmed |
+| Aug 24 | `manual_clean/v01` to `v06` | The Hand Builds | per failure image manual recipes | proved each fix, no automation yet |
+| Aug 24 | `manual_clean/v07_invert_a28` | Inversion by Hand | inversion at measured alpha 0.28 | dark streaks again |
+| Aug 24 | `template_match_lama/v02_reddit` | The Hybrid, Reddit Rules | community matching rules added | best attempt on wood grain |
+| Aug 24 | `brushnet/v01` | The Diffusion Challenger | BrushNet local, 512 crops | lost all three comparisons |
+| Aug 25 | `simple_morph_t/v16_batch40_a94_v2` | The Production Proof | stream_clean port, pixel matched | max diff 0.81, JPEG rounding only |
+
+**The same attempts ranked by success**, best first:
+
+| rank | iteration | name | why it ranks here |
+|---|---|---|---|
+| 1 | `simple_morph_t/v16_batch40_a94_v2` | The Production Proof | validated port, pixel identical to recipe outputs |
+| 2 | `simple_morph_t/v14_batch40_a94_v2` | The Locked Recipe | closed every failure, became the default |
+| 3 | `simple_morph_t/v15_fast3_a94` | The Speed Check | confirmed 2.0 to 2.3 img/s without quality loss |
+| 4 | `template_match_lama/v02_reddit` | The Hybrid, Reddit Rules | best result ever achieved on wood grain |
+| 5 | `simple_morph_t/v13_batch40_a94_v2` | The Glyph Sampler | killed the badge ghost |
+| 6 | `simple_morph_t/v11_alpha_ladder` | The Ladder, Part Two | produced the permanent 0.94 |
+| 7 | `simple_morph_t/v10_alpha_ladder` | The Ladder, Part One | narrowed opacity to a band |
+| 8 | `simple_morph_t/v12_batch40_a94` | The Forty | failed honestly, and named exactly what to fix |
+| 9 | `manual_clean/v01` to `v06` | The Hand Builds | each fix proven before automation |
+| 10 | `simple_morph_t/v09_one_color` | One Color Panel | uniform panels, opacity unsolved |
+| 11 | `simple_morph_t/v08_simple_transparent` | First Transparency | right direction, rough execution |
+| 12 | `clean_v1` to `clean_v5` | The Inpainting Runs | worked mechanically, trust ceiling |
+| 13 | `replicate` | The Template Check | clean negative result, saved future work |
+| 14 | `rect_algo/v01` to `v07` | The Geometry Family | taught box placement the hard way |
+| 15 | `brushnet/v01` | The Diffusion Challenger | lost every comparison at 20x cost |
+| 16 | `morph` to `morph_transparent` | The Probes | ragged masks, dead end confirmed cheaply |
+| 17 | `exact_invert/v01`, `v02`, `manual_clean/v07` | The Inversion Family | worst kind of failure, confidently wrong pixels |
+
+Both tables describe the same forty five directories. Every attempt was free in money because none rented anything; the only currencies spent were days and disk. Quality improvements across the middle rows were free upgrades too: the jump from sticker to locked recipe changed the pixels completely without changing the bill, and no hardware from the ladder above moves any row except BrushNet's.
 
 ## Validation
 
