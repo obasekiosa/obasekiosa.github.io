@@ -1,9 +1,11 @@
 ---
-title: Replacing watermarks with a rectangle: seven attempts, two failures, one recipe
+title: Seven attempts to replace a watermark with a rectangle
 date: 2026-08-25 09:00:00 +0100
 categories: [Engineering, Machine Learning]
 tags: [python, opencv, computer-vision, watermark, image-processing]
 ---
+
+> This story got a deeper rewrite as a four part series with diagrams and code. It starts at [How do we remove watermarks](/posts/how-do-we-remove-watermarks/).
 
 This is part one of two about cleaning watermarks off scraped real estate photos. The previous post ended with a LaMa inpainting pipeline that erased watermarks by reconstructing what was behind them. This post is what happened when I changed the goal: instead of erasing the mark, replace it with one uniform translucent rectangle that carries the mark's own color and opacity. The text becomes unreadable, the photo keeps a band that looks like a deliberate watermark, and nothing is invented.
 

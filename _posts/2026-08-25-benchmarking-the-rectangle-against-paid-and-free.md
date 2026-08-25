@@ -1,9 +1,11 @@
 ---
-title: Benching the rectangle: exact inversion, BrushNet, and a paid remover walk into a warehouse
+title: Benching the watermark rectangle against BrushNet and a paid remover
 date: 2026-08-25 11:30:00 +0100
 categories: [Engineering, Machine Learning]
 tags: [benchmarking, diffusion, computer-vision, cost-analysis]
 ---
+
+> This story got a deeper rewrite as a four part series with diagrams and code. It starts at [How do we remove watermarks](/posts/how-do-we-remove-watermarks/).
 
 Part one ended with a locked recipe: detect the watermark three times, sample the text color, neutralize the strokes, paint one translucent rectangle at 0.94. It runs at 2.0 to 2.3 images per second and produces deterministic output.
 
