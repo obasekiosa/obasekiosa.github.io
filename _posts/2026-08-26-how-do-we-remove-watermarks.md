@@ -51,6 +51,8 @@ If LaMa fills masks, maybe another model fills them better. I wired six candidat
 | ZITS | best structural reasoning over big holes | heavy dependency chain, slowest by far |
 | SD inpainting | most inventive reconstructions | least trustworthy, invented objects behind marks |
 
+The whole bake-off ran inside one hard boundary: 8 GB of VRAM. Listing images are 960x1200 and the pipeline's design rule says cleaning happens at full resolution, so every model had to work there. That ruled things out quietly. Stable Diffusion class networks cannot hold full resolution activations in 8 GB; they only participate by shrinking to small crops around the mask, which breaks the rule and shows in their fills. MAT and ZITS fit in memory but paid for it in time, ZITS worst of all because its structure analysis runs as extra stages before any fill. LaMa's modest footprint stopped being a boring fact and became a feature: full resolution, inside budget, at speed.
+
 LaMa won on the combination that matters for a batch job: quality per second and boring reliability. ZITS was interesting and unusable. Stable Diffusion was fascinating and dangerous, which foreshadows everything that follows.
 
 ## Where the whole approach cracked

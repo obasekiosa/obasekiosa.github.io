@@ -77,6 +77,14 @@ Corpus target 700,000 images:
 | FLUX or Qwen via API | $21,000 to $35,000 | invention risk billed per call |
 | rented GPUs, self-hosted diffusion | $7,000 to $12,000 | same trust problem |
 
+The dollar rows hide what each path actually demands in machines and wall clock time, so here is the same table read from the hardware side:
+
+- **The recipe** fits entirely inside the laptop's 8 GB of VRAM, no crops, no tricks. At 2.0 to 2.3 images per second that is 3.5 to 4 days for 700K on a machine that costs nothing extra to run.
+- **BrushNet** runs on the same card only through 512 pixel crops and 30 denoising steps per image, about 9.5 seconds each. That is 54 to 81 days of continuous laptop uptime for the corpus. Free, but two and a half months of the machine doing one thing.
+- **The old inpainting pipeline** it replaces ran around half an image per second once its recheck gate was included, which is roughly sixteen days for 700K.
+- **Self-hosted diffusion** is the row where my GPU disqualifies itself. Stable Diffusion class models need 24 GB+ cards at useful resolution, so "self-hosted" always meant rented A100 class machines, and the rental line is exactly where the $7,000 to $12,000 comes from.
+- **The API rows** need none of my hardware; their price is per call, which is why they scale linearly with the corpus while local paths scale with days.
+
 ## The architecture this buys
 
 ```mermaid
