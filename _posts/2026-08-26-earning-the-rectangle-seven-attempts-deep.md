@@ -119,6 +119,22 @@ Porting it into the production tool surfaced four bugs worth naming because each
 3. **The pool that hangs.** One multiprocessing worker died quietly and the pool waited forever. Detection now runs in-process.
 4. **Dilated mask leak.** Color sampled from the dilated mask instead of the raw one shifted results on most test images.
 
+## Every attempt side by side
+
+Named, timed, priced, and judged on output. Runtimes marked measured come from the actual batch runs; ones marked est. are derived from them, because every attempt here spends nearly all its time inside the YOLO detector and scales with how many detection passes it makes:
+
+| attempt | what it added | RTX 4070, 8 GB | CPU only, 20 cores | rented 24 GB card | cost for 700K | visual result |
+|---|---|---|---|---|---|---|
+| The Opaque Sticker | median fill over one detection pass | ~3 img/s (est.) | ~0.35 img/s (est.) | no faster, detector bound | free | flat tan sticker, zero transparency |
+| The Measured Veil | alpha estimation and the opacity ladder | ~3 img/s (est.) | ~0.35 img/s (est.) | no faster | free | transparency matches the real marks |
+| The Glyph Sampler | text color from the brightest 20 percent | ~3 img/s (est.) | ~0.35 img/s (est.) | no faster | free | badge case fixed to a near white panel |
+| The Stroke Neutralizer | guarded 21 pixel median patch | ~2.8 img/s (est.) | ~0.32 img/s (est.) | no faster | free | ghost strokes gone |
+| The Exact Inversion | per pixel background recovery, pure CPU math | under 1 s/img | under 1 s/img | irrelevant, already CPU bound | free | dark streaks, noise amplified up to 30 times |
+| The Rotation Union | three detection passes, masks unioned | 2.0 to 2.3 img/s (measured) | 0.25 img/s (measured, the CPU bug) | no faster | free, 3.5 to 4 days | vertical strips fully covered |
+| The Locked Recipe | guards, device fix, production port | 2.0 to 2.3 img/s (measured) | 0.25 img/s (measured) | no faster | free, 3.5 to 4 days | a deliberate watermark band, bit stable |
+
+Three things the table makes obvious. First, every image operation attempt is essentially free; the detector is the entire budget, so doubling detection passes doubles cost and nothing else matters. Second, a bigger GPU buys nothing on any row except the diffusion challengers in [part four](/posts/what-the-rectangle-could-not-beat/), because YOLO at this resolution barely loads an 8 GB card. Third, quality improvements were free upgrades: the jump from sticker to locked recipe changed the pixels completely without changing the bill.
+
 ## Validation
 
 The locked recipe processed 40 real listing images at 2.0 to 2.3 images per second, roughly four times the inpainting pipeline it replaced. Pixel comparison against the reference batch showed a maximum mean difference of 0.81, which is JPEG encoder rounding between different encoders. Zero images exceeded it.
