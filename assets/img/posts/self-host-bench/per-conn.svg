@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 254" font-family="system-ui, -apple-system, Segoe UI, sans-serif">
+  <style>
+    .lbl { fill: #66768a; font-size: 13px; }
+    .val { font-size: 12.5px; font-weight: 600; }
+  </style>
+  <!-- log scale: x = 158 + (log10(bytes)-1)/4 * 500 ; µWS 40B→75, Express 3KB→310, Cowboy 8KB→363, goraw 13KB→389, LV 27KB→429, gofast 32KB→438, gocoder 44KB→455 -->
+  <text class="lbl" x="150" y="27" text-anchor="end">µWebSockets.js</text>
+  <rect x="158" y="12" width="75" height="22" rx="3" fill="#3fb950"/>
+  <text class="val" x="241" y="27" fill="#3fb950" text-anchor="start">~40 B</text>
+  <text class="lbl" x="150" y="65" text-anchor="end">Express + ws</text>
+  <rect x="158" y="50" width="310" height="22" rx="3" fill="#3fb950"/>
+  <text class="val" x="476" y="65" fill="#3fb950" text-anchor="start">~3 KB</text>
+  <text class="lbl" x="150" y="103" text-anchor="end">raw Cowboy</text>
+  <rect x="158" y="88" width="363" height="22" rx="3" fill="#a371f7"/>
+  <text class="val" x="529" y="103" fill="#a371f7" text-anchor="start">~8 KB</text>
+  <text class="lbl" x="150" y="141" text-anchor="end">Go raw TCP (RFC6455)</text>
+  <rect x="158" y="126" width="389" height="22" rx="3" fill="#54aeff"/>
+  <text class="val" x="555" y="141" fill="#54aeff" text-anchor="start">~11–15 KB</text>
+  <text class="lbl" x="150" y="179" text-anchor="end">LiveView / Bandit</text>
+  <rect x="158" y="164" width="429" height="22" rx="3" fill="#a371f7"/>
+  <text class="val" x="595" y="179" fill="#a371f7" text-anchor="start">~27 KB</text>
+  <text class="lbl" x="150" y="217" text-anchor="end">Go fasthttp</text>
+  <rect x="158" y="202" width="438" height="22" rx="3" fill="#54aeff"/>
+  <text class="val" x="604" y="217" fill="#54aeff" text-anchor="start">~32 KB</text>
+  <!-- axis ticks -->
+  <line x1="158" y1="8" x2="158" y2="232" stroke="#66768a" stroke-width="1" opacity="0.4"/>
+  <g class="lbl" opacity="0.6" text-anchor="middle">
+    <text x="158" y="248">10 B</text>
+    <text x="283" y="248">100 B</text>
+    <text x="408" y="248">1 KB</text>
+    <text x="533" y="248">10 KB</text>
+    <text x="658" y="248">100 KB</text>
+  </g>
+  <g stroke="#66768a" opacity="0.25">
+    <line x1="283" y1="8" x2="283" y2="232"/><line x1="408" y1="8" x2="408" y2="232"/>
+    <line x1="533" y1="8" x2="533" y2="232"/><line x1="658" y1="8" x2="658" y2="232"/>
+  </g>
+  <text class="lbl" x="158" y="268" opacity="0.75" text-anchor="start">memory per idle WebSocket connection at 5k conns · logarithmic scale</text>
+</svg>

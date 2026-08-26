@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" font-family="system-ui, -apple-system, Segoe UI, sans-serif">
+  <style>
+    .lbl { fill: #66768a; font-size: 13px; }
+    .val { font-size: 12.5px; font-weight: 600; }
+  </style>
+  <!-- Next 173 -->
+  <text class="lbl" x="150" y="27" text-anchor="end">Next.js prod</text>
+  <rect x="158" y="12" width="460" height="22" rx="3" fill="#e3b341"/>
+  <text class="val" x="610" y="27" fill="#e3b341" text-anchor="end">173 MiB</text>
+  <!-- LV 141 -->
+  <text class="lbl" x="150" y="65" text-anchor="end">LiveView / Bandit</text>
+  <rect x="158" y="50" width="375" height="22" rx="3" fill="#a371f7"/>
+  <text class="val" x="525" y="65" fill="#a371f7" text-anchor="end">141 MiB</text>
+  <!-- raw cowboy 103 -->
+  <text class="lbl" x="150" y="103" text-anchor="end">raw Cowboy</text>
+  <rect x="158" y="88" width="274" height="22" rx="3" fill="#a371f7"/>
+  <text class="val" x="424" y="103" fill="#a371f7" text-anchor="end">103 MiB</text>
+  <!-- express 42 -->
+  <text class="lbl" x="150" y="141" text-anchor="end">Express + ws</text>
+  <rect x="158" y="126" width="112" height="22" rx="3" fill="#3fb950"/>
+  <text class="val" x="262" y="141" fill="#3fb950" text-anchor="end">42 MiB</text>
+  <!-- uws 23 -->
+  <text class="lbl" x="150" y="179" text-anchor="end">µWebSockets.js</text>
+  <rect x="158" y="164" width="61" height="22" rx="3" fill="#3fb950"/>
+  <text class="val" x="211" y="179" fill="#3fb950" text-anchor="end">23 MiB</text>
+  <!-- goraw 13 -->
+  <text class="lbl" x="150" y="217" text-anchor="end">Go raw TCP (RFC6455)</text>
+  <rect x="158" y="202" width="35" height="22" rx="3" fill="#54aeff"/>
+  <text class="val" x="201" y="217" fill="#54aeff" text-anchor="end">13</text>
+  <!-- gofast 8 -->
+  <text class="lbl" x="150" y="255" text-anchor="end">Go fasthttp</text>
+  <rect x="158" y="240" width="21" height="22" rx="3" fill="#54aeff"/>
+  <text class="val" x="187" y="255" fill="#54aeff" text-anchor="end">8</text>
+  <!-- goshop 7 -->
+  <text class="lbl" x="150" y="293" text-anchor="end">Go net/http (coder/ws)</text>
+  <rect x="158" y="278" width="19" height="22" rx="3" fill="#54aeff"/>
+  <text class="val" x="185" y="293" fill="#54aeff" text-anchor="end">7</text>
+  <line x1="158" y1="8" x2="158" y2="308" stroke="#66768a" stroke-width="1" opacity="0.4"/>
+  <text class="lbl" x="158" y="326" opacity="0.75">resident memory at idle, whole container · varies ±30% between sessions · lower is better</text>
+</svg>

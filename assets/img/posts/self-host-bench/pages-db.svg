@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 292" font-family="system-ui, -apple-system, Segoe UI, sans-serif">
+  <style>
+    .lbl { fill: #66768a; font-size: 13px; }
+    .val { font-size: 12.5px; font-weight: 600; }
+    .bar { height: 22px; rx: 3; }
+  </style>
+  <!-- rows: y = 12 + i*38, bar h 22 -->
+  <!-- µWS.js 1660 (node #3fb950) -->
+  <text class="lbl" x="150" y="27" text-anchor="end">µWebSockets.js</text>
+  <rect class="bar" x="158" y="12" width="520" height="22" rx="3" fill="#3fb950"/>
+  <text class="val" x="686" y="27" fill="#3fb950" text-anchor="end">1660</text>
+  <!-- LiveView/Bandit 1348 (elixir #a371f7) -->
+  <text class="lbl" x="150" y="65" text-anchor="end">LiveView / Bandit</text>
+  <rect class="bar" x="158" y="50" width="422" height="22" rx="3" fill="#a371f7"/>
+  <text class="val" x="588" y="65" fill="#a371f7" text-anchor="end">1348</text>
+  <!-- fasthttp 1136 (go #54aeff) -->
+  <text class="lbl" x="150" y="103" text-anchor="end">Go fasthttp</text>
+  <rect class="bar" x="158" y="88" width="356" height="22" rx="3" fill="#54aeff"/>
+  <text class="val" x="522" y="103" fill="#54aeff" text-anchor="end">1136</text>
+  <!-- Go net/http 811 -->
+  <text class="lbl" x="150" y="141" text-anchor="end">Go net/http</text>
+  <rect class="bar" x="158" y="126" width="254" height="22" rx="3" fill="#54aeff"/>
+  <text class="val" x="420" y="141" fill="#54aeff" text-anchor="end">811</text>
+  <!-- raw Cowboy 398 -->
+  <text class="lbl" x="150" y="179" text-anchor="end">raw Cowboy †</text>
+  <rect class="bar" x="158" y="164" width="125" height="22" rx="3" fill="#a371f7"/>
+  <text class="val" x="291" y="179" fill="#a371f7" text-anchor="end">398</text>
+  <!-- Express 296 -->
+  <text class="lbl" x="150" y="217" text-anchor="end">Express</text>
+  <rect class="bar" x="158" y="202" width="93" height="22" rx="3" fill="#3fb950"/>
+  <text class="val" x="259" y="217" fill="#3fb950" text-anchor="end">296</text>
+  <!-- Next 93 -->
+  <text class="lbl" x="150" y="255" text-anchor="end">Next.js prod</text>
+  <rect class="bar" x="158" y="240" width="29" height="22" rx="3" fill="#e3b341"/>
+  <text class="val" x="195" y="255" fill="#e3b341" text-anchor="end">93</text>
+  <!-- axis -->
+  <line x1="158" y1="8" x2="158" y2="270" stroke="#66768a" stroke-width="1" opacity="0.4"/>
+  <text class="lbl" x="158" y="288" opacity="0.75">requests/sec, ab -c50 · SSR page + one DB SELECT · same VM, same window</text>
+</svg>
