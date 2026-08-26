@@ -121,14 +121,14 @@ Porting it into the production tool surfaced four bugs worth naming because each
 
 ## Every attempt side by side
 
-Every directory in the repository is its own attempt here, forty five of them, each trying something slightly different. Throughput columns are images per second for that attempt on that machine. Two anchors are measured everywhere: the three pass locked recipe at 2.0 to 2.3 img/s on the 4070 and 0.25 img/s when everything fell back to CPU. All other numbers derive from those two plus detection pass count, marked with a tilde. Rows showing one flat number are detector free and CPU native, so every GPU sits idle and the number is the same in every column.
+Every directory in the repository is its own attempt here, forty five of them, each trying something slightly different. Throughput columns are images per second for that attempt on that machine. Plain numbers are measured: they come from the run logs (pp_run*.jsonl, faint_run*.log) and the August work sessions. Cells with a tilde are derived from the measured anchors, because no run of that attempt ever executed on that machine; the anchors are v14 at 2.34 img/s (17.1 seconds for 40 images), the CPU fallback incident at 0.25, and the one diffusion datapoint, BrushNet at 9.5 seconds per image.
 
 | S/N | iteration | name | what it tested | visual result | CPU 20c | 4070 8G | 7900XT 24G | 4090 24G | L40S 48G | A100 80G | H100 80G | 5090 32G |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | `clean_v5` | LaMa Generation | faint pass generation five | partial cleans remain | ~0.05 | ~0.5 | ~0.6 | ~0.65 | ~0.7 | ~0.7 | ~0.7 | ~0.7 |
-| 2 | `clean_v1` | LaMa Generation | baseline pipeline output | invented window fills | ~0.05 | ~0.5 | ~0.6 | ~0.65 | ~0.7 | ~0.7 | ~0.7 | ~0.7 |
-| 3 | `clean_v2` | LaMa Generation | OCR threshold tweak | still watermarked stragglers | ~0.05 | ~0.5 | ~0.6 | ~0.65 | ~0.7 | ~0.7 | ~0.7 | ~0.7 |
-| 4 | `clean_v4` | LaMa Generation | mask dilation change | weird blurs on texture | ~0.05 | ~0.5 | ~0.6 | ~0.65 | ~0.7 | ~0.7 | ~0.7 | ~0.7 |
+| 1 | `clean_v5` | LaMa Generation | faint pass generation five | partial cleans remain | ~0.05 | 0.94 | ~1.1 | ~1.15 | ~1.2 | ~1.2 | ~1.2 | ~1.2 | ~1.2 
+| 2 | `clean_v1` | LaMa Generation | baseline pipeline output | invented window fills | ~0.05 | 1.11 | ~1.2 | ~1.2 | ~1.25 | ~1.25 | ~1.25 | ~1.25 | ~1.25 
+| 3 | `clean_v2` | LaMa Generation | OCR threshold tweak | still watermarked stragglers | ~0.05 | 1.19 | ~1.2 | ~1.2 | ~1.25 | ~1.25 | ~1.25 | ~1.25 | ~1.25 
+| 4 | `clean_v4` | LaMa Generation | mask dilation change | weird blurs on texture | ~0.05 | 1.24 | ~1.25 | ~1.25 | ~1.3 | ~1.3 | ~1.3 | ~1.3 | ~1.3 
 | 5 | `morph` | The Probe | morphology alone finds marks | masks too ragged | 5 | 5 | 5 | 5 | 5 | 5 | 5 | 5 |
 | 6 | `morph_v2` | The Probe, Second Cut | tighter kernels | ragged, faster, still no | 6 | 6 | 6 | 6 | 6 | 6 | 6 | 6 |
 | 7 | `morph_simple` | The Simple Probe | minimal operation set | misses thin strokes | 7 | 7 | 7 | 7 | 7 | 7 | 7 | 7 |
@@ -158,8 +158,8 @@ Every directory in the repository is its own attempt here, forty five of them, e
 | 31 | `simple_morph_t/v11_alpha_ladder` | Ladder Part Two | opacities 0.86 to 1.00 | 0.94 chosen forever | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
 | 32 | `simple_morph_t/v12_batch40_a94` | The Forty | full batch at 0.94 | badge ghost, half verticals | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
 | 33 | `simple_morph_t/v13_batch40_a94_v2` | Glyph Sampler | brightest 20 percent color | badge case fixed | ~0.33 | ~2.8 | ~2.8 | ~3.0 | ~3.0 | ~3.0 | ~3.0 | ~3.0 |
-| 34 | **`simple_morph_t/v14_batch40_a94_v2` ★** | **The Locked Recipe** | rotations, sampler, patch, 0.94 | deliberate band, failures closed | **0.25** | **2.2** | **~2.6** | **~2.8** | **~2.8** | **~2.8** | **~2.8** | **~2.8** |
-| 35 | `simple_morph_t/v15_fast3_a94` | Speed Check | timing the locked recipe | confirmed the anchor | 0.25 | 2.2 | ~2.6 | ~2.8 | ~2.8 | ~2.8 | ~2.8 | ~2.8 |
+| 34 | **`simple_morph_t/v14_batch40_a94_v2` ★** | **The Locked Recipe** | rotations, sampler, patch, 0.94 | deliberate band, failures closed | **0.25** | **2.34** | **~2.6** | **~2.8** | **~2.8** | **~2.8** | **~2.8** | **~2.8** |
+| 35 | `simple_morph_t/v15_fast3_a94` | Speed Check | rotation passes YOLO only | 470 ms/img steady state | 0.25 | 2.13 | ~2.6 | ~2.8 | ~2.8 | ~2.8 | ~2.8 | ~2.8 |
 | 36 | `manual_clean/v01` | Hand Build 1 | badge color by hand | proved glyph sampling | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
 | 37 | `manual_clean/v02` | Hand Build 2 | ghost stroke removal | proved the median patch | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
 | 38 | `manual_clean/v03` | Hand Build 3 | vertical coverage | proved rotation union | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
@@ -169,9 +169,9 @@ Every directory in the repository is its own attempt here, forty five of them, e
 | 42 | `manual_clean/v07_invert_a28` | Inversion by Hand | inversion at alpha 0.28 | dark streaks again | 28 | 28 | 28 | 28 | 28 | 28 | 28 | 28 |
 | 43 | `template_match_lama/v02_reddit` | Hybrid, Reddit Rules | community matching added | best ever on wood grain | ~0.04 | ~0.45 | ~0.55 | ~0.6 | ~0.65 | ~0.65 | ~0.65 | ~0.65 |
 | 44 | `brushnet/v01` | Diffusion Challenger | BrushNet, 512 crops, 30 steps | lost all comparisons | ~0.005 | 0.105 | ~0.2 | ~0.3 | ~0.35 | ~0.4 | ~0.5 | ~0.4 |
-| 45 | `simple_morph_t/v16_batch40_a94_v2` | Production Proof | stream_clean port, pixel match | max diff 0.81, rounding only | 0.25 | 2.2 | ~2.6 | ~2.8 | ~2.8 | ~2.8 | ~2.8 | ~2.8 |
+| 45 | `simple_morph_t/v16_batch40_a94_v2` | Production Proof | stream_clean port, pixel match | max diff 0.81, rounding only | 0.25 | 2.06 | ~2.6 | ~2.8 | ~2.8 | ~2.8 | ~2.8 | ~2.8 |
 
-The flattening near the top of every column is the point: JPEG decode, preprocessing, and OpenCV work run on the host, so beyond 4090 class silicon the pipeline is CPU bound and datacenter VRAM buys nothing. Only row 44 changes shape across machines, because diffusion is the one workload that can eat a big card.
+Provenance for the plain numbers: clean_v1 1.11, clean_v2 1.19, clean_v4 1.24 and clean_v5 0.94 come straight from the forty image run logs, and the legacy recheck gate measured 0.52, living on in rows 28 and 43. Row 34 is the famous 17.1 seconds for 40 images, 427 milliseconds each, with fleet math of 58 hours for 489K and 83 hours for 700K. Row 35 isolated the YOLO only rotation trick at roughly 470 milliseconds per image steady state. Row 45 is the production port at 2.04 to 2.08 across its validation runs. Row 44 ran at 9.5 seconds per image on the 4070, matching the 7 to 10 second prediction, with 2 to 3 seconds quoted for a rented A100. The 0.25 on recipe rows is the silent CPU fallback incident, kept as a warning rather than deleted. The flattening near the top of every column is the point: JPEG decode, preprocessing, and OpenCV work run on the host, so beyond 4090 class silicon the pipeline is CPU bound and datacenter VRAM buys nothing. Only row 44 changes shape across machines, because diffusion is the one workload that can eat a big card.
 
 **The same forty five attempts ranked by success**, best first. Hardware throughputs for each row are exactly the ones in the table above:
 
