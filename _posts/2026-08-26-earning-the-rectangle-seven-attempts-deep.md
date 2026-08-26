@@ -121,109 +121,105 @@ Porting it into the production tool surfaced four bugs worth naming because each
 
 ## Every attempt side by side
 
-Every directory in the repository is its own attempt here, forty five of them, each trying something slightly different. Throughput columns are images per second for that attempt on that machine. Plain numbers are measured: they come from the run logs (pp_run*.jsonl, faint_run*.log) and the August work sessions. Cells with a tilde are derived from the measured anchors, because no run of that attempt ever executed on that machine; the anchors are v14 at 2.34 img/s (17.1 seconds for 40 images), the CPU fallback incident at 0.25, and the one diffusion datapoint, BrushNet at 9.5 seconds per image.
+Every directory in the repository is its own attempt here, forty five of them, each trying something slightly different. Throughput columns are images per second for that attempt on that machine. Plain numbers are measured, from the run logs (pp_run*.jsonl, faint_run*.log) and the August sessions; cells with a tilde are honest estimates because no run of that attempt ever touched that machine. The ETA column converts each row's own 4070 throughput into wall clock for the 700K corpus, so the measured rows land exactly on the session quoted numbers: 83 hours for v14, 91 for v15. Every attempt was local, so the cost column is zero throughout; the expensive alternatives live in parts two and four.
 
-| S/N | iteration | name | what it tested | visual result | issue that killed it | CPU 20c | 4070 8G | 7900XT 24G | 4090 24G | L40S 48G | A100 80G | H100 80G | 5090 32G |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | `clean_v5` | LaMa Generation | faint pass generation five | partial cleans remain | partial masks left residue behind | ~0.05 | 0.94 | ~1.1 | ~1.15 | ~1.2 | ~1.2 | ~1.2 | ~1.2 | ~1.2 
-| 2 | `clean_v1` | LaMa Generation | baseline pipeline output | invented window fills | invented fills behind every mark | ~0.05 | 1.11 | ~1.2 | ~1.2 | ~1.25 | ~1.25 | ~1.25 | ~1.25 | ~1.25 
-| 3 | `clean_v2` | LaMa Generation | OCR threshold tweak | still watermarked stragglers | stragglers survived OCR thresholds | ~0.05 | 1.19 | ~1.2 | ~1.2 | ~1.25 | ~1.25 | ~1.25 | ~1.25 | ~1.25 
-| 4 | `clean_v4` | LaMa Generation | mask dilation change | weird blurs on texture | dilation smeared texture areas | ~0.05 | 1.24 | ~1.25 | ~1.25 | ~1.3 | ~1.3 | ~1.3 | ~1.3 | ~1.3 
-| 5 | `morph` | The Probe | morphology alone finds marks | masks too ragged | masks too ragged to build on | 5 | 5 | 5 | 5 | 5 | 5 | 5 | 5 |
-| 6 | `morph_v2` | The Probe, Second Cut | tighter kernels | ragged, faster, still no | still ragged, dead end | 6 | 6 | 6 | 6 | 6 | 6 | 6 | 6 |
-| 7 | `morph_simple` | The Simple Probe | minimal operation set | misses thin strokes | misses thin strokes entirely | 7 | 7 | 7 | 7 | 7 | 7 | 7 | 7 |
-| 8 | `morph_transparent` | Transparent Probe | soft alpha on those masks | halos everywhere | halos on every soft edge | 5 | 5 | 5 | 5 | 5 | 5 | 5 | 5 |
-| 9 | `replicate` | Template Check | cross image alpha templates | too noisy to trust | cross image templates too noisy to trust | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
-| 10 | `unmix` | Decomposition Try | UNMIX layer separation | unusable at JPEG quality | JPEG noise destroys layer separation | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 |
-| 11 | `rect_algo/v01` | Geometry Sketch 1 | fixed placement rules | boxes drifted off marks | fixed rules drift off the marks | ~3 | ~3.2 | ~3.2 | ~3.4 | ~3.4 | ~3.4 | ~3.4 | ~3.4 |
-| 12 | `rect_algo/v02` | Geometry Sketch 2 | aspect ratio priors | drift reduced, not gone | priors reduce drift, never remove it | ~3 | ~3.2 | ~3.2 | ~3.4 | ~3.4 | ~3.4 | ~3.4 | ~3.4 |
-| 13 | `rect_algo/v03` | Geometry Sketch 3 | edge snap heuristics | snapped to wrong edges | snaps to the wrong edges | ~3 | ~3.2 | ~3.2 | ~3.4 | ~3.4 | ~3.4 | ~3.4 | ~3.4 |
-| 14 | `rect_algo/v04_tri` | Triangle Rule | triangular coverage | overcovers photo edges | overcovers and eats photo edges | ~3 | ~3.2 | ~3.2 | ~3.4 | ~3.4 | ~3.4 | ~3.4 | ~3.4 |
-| 15 | `rect_algo/v05_round` | Rounded Panel | softened aesthetics | nice, missed verticals | missed verticals completely | ~3 | ~3.2 | ~3.2 | ~3.4 | ~3.4 | ~3.4 | ~3.4 | ~3.4 |
-| 16 | `rect_algo/v06_user_script` | Borrowed Script | community geometry script | wrong color basis | wrong color basis for these stamps | 4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 |
-| 17 | `rect_algo/v07_glyph_masks` | Glyph First | per glyph boxes, no union | seams between letters | seams between letter boxes | ~2.7 | ~2.9 | ~2.9 | ~3.1 | ~3.1 | ~3.1 | ~3.1 | ~3.1 |
-| 18 | `simple_morph_t/v01` | Sticker Round 1 | median fill box | text gone, pasted look | opaque pasted look fails honesty goal | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 19 | `simple_morph_t/v02` | Sticker Round 2 | sampling region tweak | same pasted look | same pasted look | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 20 | `simple_morph_t/v03` | Sticker Round 3 | percentile color | marginally warmer panel | color still not from glyphs | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 21 | `simple_morph_t/v04` | Sticker Round 4 | padding sweep | edges clipped glyphs | padding clipped real glyphs | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 22 | `simple_morph_t/v05` | Sticker Round 5 | mask merge rules | double boxes on twins | twin marks got double boxes | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 23 | `simple_morph_t/v06` | Sticker Round 6 | box union strategy | stable boxes, opaque | stable boxes but still opaque | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 24 | `simple_morph_t/v07` | Sticker Round 7 | final opaque tuning | best sticker, still opaque | best sticker, opacity still wrong | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 25 | `simple_morph_t/v08_simple_transparent` | First Transparency | blend instead of fill | right idea, rough color | right idea, rough color basis | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 26 | `exact_invert/v01_flat` | Flat Alpha Inversion | one alpha everywhere | streaks from edges | one alpha cannot fit all strokes | 30 | 30 | 30 | 30 | 30 | 30 | 30 | 30 |
-| 27 | `exact_invert/v02_perpixel` | Per Pixel Inversion | derived alpha map | noise amplified 30x | alpha estimator dominated by background pixels | 25 | 25 | 25 | 25 | 25 | 25 | 25 | 25 |
-| 28 | `template_match_lama/v01` | Hybrid First Pass | template match plus LaMa | good only on flat marks | LaMa cost paid for flat mark gains only | ~0.04 | ~0.45 | ~0.55 | ~0.6 | ~0.65 | ~0.65 | ~0.65 | ~0.65 |
-| 29 | `simple_morph_t/v09_one_color` | One Color Panel | constant color per mark | uniform, opacity unsolved | opacity unsolved | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 30 | `simple_morph_t/v10_alpha_ladder` | Ladder Part One | opacities 0.40 to 0.85 | below 0.90 traceable | nothing below 0.90 hides text | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 31 | `simple_morph_t/v11_alpha_ladder` | Ladder Part Two | opacities 0.86 to 1.00 | 0.94 chosen forever | none, this run produced the lock | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 32 | `simple_morph_t/v12_batch40_a94` | The Forty | full batch at 0.94 | badge ghost, half verticals | badge ghost plus half detected verticals | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 33 | `simple_morph_t/v13_batch40_a94_v2` | Glyph Sampler | brightest 20 percent color | badge case fixed | verticals still half caught | ~0.33 | ~2.8 | ~2.8 | ~3.0 | ~3.0 | ~3.0 | ~3.0 | ~3.0 |
-| 34 | **`simple_morph_t/v14_batch40_a94_v2` ★** | **The Locked Recipe** | rotations, sampler, patch, 0.94 | deliberate band, failures closed | none, locked as production default | **0.25** | **2.34** | **~2.6** | **~2.8** | **~2.8** | **~2.8** | **~2.8** | **~2.8** |
-| 35 | `simple_morph_t/v15_fast3_a94` | The Shortcut That Backfired | rotated passes YOLO only, OCR veto dropped | hard case panel bled over the door edge | slower than v14, 470 vs 427 ms/img, no OCR veto so boxes went loose | 0.25 | 2.13 | ~2.6 | ~2.8 | ~2.8 | ~2.8 | ~2.8 | ~2.8 |
-| 36 | `manual_clean/v01` | Hand Build 1 | badge color by hand | proved glyph sampling | manual only, no automation | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 37 | `manual_clean/v02` | Hand Build 2 | ghost stroke removal | proved the median patch | manual only, no automation | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 38 | `manual_clean/v03` | Hand Build 3 | vertical coverage | proved rotation union | manual only, no automation | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 39 | `manual_clean/v04` | Hand Build 4 | template extraction test | templates unstable | templates unstable across images | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 40 | `manual_clean/v05` | Hand Build 5 | alpha fit refinement | fits never converged | alpha fits never converged | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 41 | `manual_clean/v06` | Hand Build 6 | patch guard limits | guards tuned by eye | guards tuned by eye, not rules | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 |
-| 42 | `manual_clean/v07_invert_a28` | Inversion by Hand | inversion at alpha 0.28 | dark streaks again | confidently wrong pixels, streaks | 28 | 28 | 28 | 28 | 28 | 28 | 28 | 28 |
-| 43 | `template_match_lama/v02_reddit` | Hybrid, Reddit Rules | community matching added | best ever on wood grain | grain still loses to the paid service | ~0.04 | ~0.45 | ~0.55 | ~0.6 | ~0.65 | ~0.65 | ~0.65 | ~0.65 |
-| 44 | `brushnet/v01` | Diffusion Challenger | BrushNet, 512 crops, 30 steps | lost all comparisons | muddy slabs with ghost text, 20x cost | ~0.005 | 0.105 | ~0.2 | ~0.3 | ~0.35 | ~0.4 | ~0.5 | ~0.4 |
-| 45 | `simple_morph_t/v16_batch40_a94_v2` | Production Proof | stream_clean port, pixel match | max diff 0.81, rounding only | none, shipped | 0.25 | 2.06 | ~2.6 | ~2.8 | ~2.8 | ~2.8 | ~2.8 | ~2.8 |
+| S/N | iteration | name | what it tried | result on the image | issue that killed it | CPU 20c | 4070 8G | 7900XT 24G | 4090 24G | L40S 48G | A100 80G | H100 80G | 5090 32G | 700K ETA on 4070 | cost 700K |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | `clean_v5` | LaMa Generation | fifth threshold generation for faint marks | some photos partly cleaned, residue stayed | marks below detection threshold survived | ~0.05 | 0.94 | ~1.1 | ~1.15 | ~1.2 | ~1.2 | ~1.2 | ~1.2 | ~207 h (8.6 d) | $0 |
+| 2 | `clean_v1` | LaMa Generation | baseline: detect then LaMa fill | walls clean, windows filled with invented smudges | invented content unverifiable without originals | ~0.05 | 1.11 | ~1.2 | ~1.2 | ~1.25 | ~1.25 | ~1.25 | ~1.25 | ~175 h (7.3 d) | $0 |
+| 3 | `clean_v2` | LaMa Generation | raised OCR corroboration threshold | fewer false hits, real faint marks skipped | tuning one knob opened coverage holes | ~0.05 | 1.19 | ~1.2 | ~1.2 | ~1.25 | ~1.25 | ~1.25 | ~1.25 | ~163 h (6.8 d) | $0 |
+| 4 | `clean_v4` | LaMa Generation | wider mask dilation for glyph edges | wood and brick blurred where masks grew | bigger masks meant worse fills | ~0.05 | 1.24 | ~1.25 | ~1.25 | ~1.3 | ~1.3 | ~1.3 | ~1.3 | ~157 h (6.5 d) | $0 |
+| 5 | `morph` | The Probe | OpenCV morphology alone finds marks | masks covered marks plus noise blobs, ragged edges | no clean path from ragged masks to panels | ~5 | 5 | 5 | 5 | 5 | 5 | 5 | 5 | ~39 h | $0 |
+| 6 | `morph_v2` | The Probe, Second Cut | tighter kernels and structure filters | faster, glyph edges still ragged | same dead end, cheaper | ~6 | 6 | 6 | 6 | 6 | 6 | 6 | 6 | ~32 h | $0 |
+| 7 | `morph_simple` | The Simple Probe | minimal erode dilate set only | thin strokes dropped entirely | recall far too low | ~7 | 7 | 7 | 7 | 7 | 7 | 7 | 7 | ~28 h | $0 |
+| 8 | `morph_transparent` | Transparent Probe | soft alpha edges on morph masks | halos ringed every panel edge | bad masks make soft edges worse | ~5 | 5 | 5 | 5 | 5 | 5 | 5 | 5 | ~39 h | $0 |
+| 9 | `replicate` | Template Check | alpha template reused across sibling shots | templates matched nothing reliably | per shot brightness shifts kill shared templates | ~1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | ~194 h (8.1 d) | $0 |
+| 10 | `unmix` | Decomposition Try | unmix mark as separable layer | JPEG blocks broke separation, colored fringes | source compression too high for decomposition | ~2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | ~97 h (4.0 d) | $0 |
+| 11 | `rect_algo/v01` | Geometry Sketch 1 | fixed offset placement rules | boxes drifted off marks across aspect ratios | fixed rules cannot generalize | ~3 | ~3.2 | ~3.2 | ~3.4 | ~3.4 | ~3.4 | ~3.4 | ~3.4 | ~61 h (2.5 d) | $0 |
+| 12 | `rect_algo/v02` | Geometry Sketch 2 | aspect ratio priors added | common shapes better, others still off | priors are guesses in disguise | ~3 | ~3.2 | ~3.2 | ~3.4 | ~3.4 | ~3.4 | ~3.4 | ~3.4 | ~61 h (2.5 d) | $0 |
+| 13 | `rect_algo/v03` | Geometry Sketch 3 | snap box edges to scene edges | snapped to window frames instead of marks | edge ambiguity unsolvable locally | ~3 | ~3.2 | ~3.2 | ~3.4 | ~3.4 | ~3.4 | ~3.4 | ~3.4 | ~61 h (2.5 d) | $0 |
+| 14 | `rect_algo/v04_tri` | Triangle Rule | triangular coverage heuristics | marks covered along with half the wall | overcoverage destroys the photo | ~3 | ~3.2 | ~3.2 | ~3.4 | ~3.4 | ~3.4 | ~3.4 | ~3.4 | ~61 h (2.5 d) | $0 |
+| 15 | `rect_algo/v05_round` | Rounded Panel | rounded corner aesthetics | looked nice, verticals missed entirely | cosmetics cannot fix coverage | ~3 | ~3.2 | ~3.2 | ~3.4 | ~3.4 | ~3.4 | ~3.4 | ~3.4 | ~61 h (2.5 d) | $0 |
+| 16 | `rect_algo/v06_user_script` | Borrowed Script | community removal script geometry | panel colors came from background not text | its color model assumes different watermarks | ~4 | 4 | 4 | 4 | 4 | 4 | 4 | 4 | ~49 h (2.0 d) | $0 |
+| 17 | `rect_algo/v07_glyph_masks` | Glyph First | per glyph boxes instead of one union | visible seams between letter panels | glyph sized units make patchwork | ~2.7 | ~2.9 | ~2.9 | ~3.1 | ~3.1 | ~3.1 | ~3.1 | ~3.1 | ~67 h (2.8 d) | $0 |
+| 18 | `simple_morph_t/v01` | Sticker Round 1 | first median fill over union box | letters gone, flat opaque tan sticker | zero transparency fails the honesty goal | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 19 | `simple_morph_t/v02` | Sticker Round 2 | sampling region tightened inside mask | same sticker look | opacity was never about sampling region | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 20 | `simple_morph_t/v03` | Sticker Round 3 | percentile based color sampling | slightly warmer panel, still opaque | sampling tweaks cannot add transparency | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 21 | `simple_morph_t/v04` | Sticker Round 4 | padding sweep around the box | padding clipped neighbor glyphs into panels | geometry knob, wrong problem | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 22 | `simple_morph_t/v05` | Sticker Round 5 | merge rules for twin stamps | double boxes whenever marks sat close | merge logic required regardless | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 23 | `simple_morph_t/v06` | Sticker Round 6 | union strategy stabilized | one stable box per mark at last | still fully opaque | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 24 | `simple_morph_t/v07` | Sticker Round 7 | final opaque era tuning | best sticker achievable | transparency still zero | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 25 | `simple_morph_t/v08_simple_transparent` | First Transparency | blend equation replaces fill, alpha 0.29 | surface showed through, color rough | direction right, color sampling crude | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 26 | `exact_invert/v01_flat` | Flat Alpha Inversion | invert blend with one global alpha | dark streaks at anti aliased stroke edges | one alpha cannot fit edge gradients | ~30 | 30 | 30 | 30 | 30 | 30 | 30 | 30 | ~7 h | $0 |
+| 27 | `exact_invert/v02_perpixel` | Per Pixel Inversion | per pixel alpha map from template | noise amplified up to 30 times | estimator dominated by background pixels | ~25 | 25 | 25 | 25 | 25 | 25 | 25 | 25 | ~8 h | $0 |
+| 28 | `template_match_lama/v01` | Hybrid First Pass | template match locate, LaMa fill strokes | flat marks clean, textured ones poor | LaMa cost paid for narrow gains | ~0.04 | ~0.45 | ~0.5 | ~0.55 | ~0.55 | ~0.55 | ~0.55 | ~0.55 | ~432 h (18 d) | $0 |
+| 29 | `simple_morph_t/v09_one_color` | One Color Panel | single constant color per whole mark | uniform panels achieved at last | which alpha remained unknown | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 30 | `simple_morph_t/v10_alpha_ladder` | Ladder Part One | opacities 0.40 to 0.85 rendered side by side | every panel traceable below 0.90 | lower half of ladder ruled out | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 31 | `simple_morph_t/v11_alpha_ladder` | Ladder Part Two | opacities 0.86 to 1.00 rendered | 0.94 unreadable yet still reads as watermark | none, this run produced the lock | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 32 | `simple_morph_t/v12_batch40_a94` | The Forty | first full 40 image batch at 0.94 | purple badge text ghosted through, wardrobe strip half covered | two concrete failure classes exposed | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 33 | `simple_morph_t/v13_batch40_a94_v2` | Glyph Sampler | text color from brightest 20 percent of mask | badge became a clean white panel | vertical strips untouched by this fix | ~0.33 | ~2.8 | ~2.8 | ~3.0 | ~3.0 | ~3.0 | ~3.0 | ~3.0 | ~69 h (2.9 d) | $0 |
+| 34 | **`simple_morph_t/v14_batch40_a94_v2` ★** | **The Locked Recipe** | rotations times three unioned, sampler, median patch, 0.94 | all 40 clean: badge gone, strip covered, text unreadable | none, locked as production default | **0.25** | **2.34** | **~2.6** | **~2.8** | **~2.8** | **~2.8** | **~2.8** | **~2.8** | 83 h (3.5 d) | $0 |
+| 35 | `simple_morph_t/v15_fast3_a94` | The Shortcut That Backfired | rotated passes YOLO only, OCR veto dropped | hard case panel bled over the door edge, bbox x 165 to 24 | slower than v14, 470 vs 427 ms per image, and looser | 0.25 | 2.13 | ~2.6 | ~2.8 | ~2.8 | ~2.8 | ~2.8 | ~2.8 | 91 h (3.8 d) | $0 |
+| 36 | `manual_clean/v01` | Hand Build 1 | badge color fix built by hand on one image | brightest 20 percent sampling killed the ghost | manual proof, single image | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 37 | `manual_clean/v02` | Hand Build 2 | median patch painted before the panel | ghost strokes vanished completely | manual proof only | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 38 | `manual_clean/v03` | Hand Build 3 | rotation union applied by hand | vertical strip fully covered at last | manual proof only | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 39 | `manual_clean/v04` | Hand Build 4 | cross image template extraction tested | templates unstable across siblings | confirmed inversion inputs impossible | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 40 | `manual_clean/v05` | Hand Build 5 | refined alpha fitting attempt | fits never converged inside the clamp ceiling | exact recovery mathematically dead | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 41 | `manual_clean/v06` | Hand Build 6 | patch guard limits calibrated | delta lum 15 and skip 210 chosen by eye | eyeballed values needed codifying | ~0.35 | ~3.0 | ~3.0 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~3.2 | ~155 h (6.4 d) | $0 |
+| 42 | `manual_clean/v07_invert_a28` | Inversion by Hand | inversion at measured alpha 0.28 | dark streaks again | confidently wrong pixels, worst failure type | ~28 | 28 | 28 | 28 | 28 | 28 | 28 | 28 | ~7 h | $0 |
+| 43 | `template_match_lama/v02_reddit` | Hybrid, Reddit Rules | community matching rules added to hybrid | best wood grain continuation achieved anywhere local | grain still loses to the paid service | ~0.04 | ~0.45 | ~0.5 | ~0.55 | ~0.55 | ~0.55 | ~0.55 | ~0.55 | ~432 h (18 d) | $0 |
+| 44 | `brushnet/v01` | Diffusion Challenger | free diffusion inpainting, 512 crops, 30 steps | muddy slab with ghost text on badge, zero grain on wood | lost every comparison at 20x the cost | ~0.005 | 0.105 | ~0.2 | ~0.3 | ~0.33 | ~0.4 | ~0.5 | ~0.4 | 1,852 h (77 d) | $0 |
+| 45 | `simple_morph_t/v16_batch40_a94_v2` | Production Proof | same 40 images through the shipped stream_clean.py | outputs match v14 within max diff 0.81, pure JPEG rounding | none, shipped | 0.25 | 2.06 | ~2.6 | ~2.8 | ~2.8 | ~2.8 | ~2.8 | ~2.8 | 94 h (3.9 d) | $0 |
 
-Provenance for the plain numbers: clean_v1 1.11, clean_v2 1.19, clean_v4 1.24 and clean_v5 0.94 come straight from the forty image run logs, and the legacy recheck gate measured 0.52, living on in rows 28 and 43. Row 34 is the famous 17.1 seconds for 40 images, 427 milliseconds each, with fleet math of 58 hours for 489K and 83 hours for 700K. Row 35 is the cautionary tale: dropping the OCR veto from rotated passes came out slower than v14, roughly 470 versus 427 milliseconds per image, and looser, bleeding the hardest panel over the door edge. Row 45 is the production port at 2.04 to 2.08 across its validation runs. Row 44 ran at 9.5 seconds per image on the 4070, matching the 7 to 10 second prediction, with 2 to 3 seconds quoted for a rented A100. The 0.25 on recipe rows is the silent CPU fallback incident, kept as a warning rather than deleted. The flattening near the top of every column is the point: JPEG decode, preprocessing, and OpenCV work run on the host, so beyond 4090 class silicon the pipeline is CPU bound and datacenter VRAM buys nothing. Only row 44 changes shape across machines, because diffusion is the one workload that can eat a big card.
+**The same forty five attempts ranked by success**, best first. Throughput figures for each row are exactly the ones in the table above.
 
-**The same forty five attempts ranked by success**, best first. Hardware throughputs for each row are exactly the ones in the table above:
-
-| rank | iteration | name | why it ranks here |
-|---|---|---|---|
-| 1 | `simple_morph_t/v16_batch40_a94_v2` | Production Proof | validated port, pixel identical to recipe outputs |
-| 2 | **`simple_morph_t/v14_batch40_a94_v2` ★** | **The Locked Recipe** | closed every failure, became the default |
-| 3 | `template_match_lama/v02_reddit` | Hybrid, Reddit Rules | best result ever on wood grain |
-| 4 | `simple_morph_t/v13_batch40_a94_v2` | Glyph Sampler | killed the badge ghost |
-| 5 | `simple_morph_t/v11_alpha_ladder` | Ladder Part Two | produced the permanent 0.94 |
-| 6 | `simple_morph_t/v10_alpha_ladder` | Ladder Part One | narrowed opacity to a band |
-| 7 | `simple_morph_t/v12_batch40_a94` | The Forty | failed honestly and named what to fix |
-| 8 | `manual_clean/v01` | Hand Build 1 | proved glyph sampling works |
-| 9 | `manual_clean/v02` | Hand Build 2 | proved the median patch works |
-| 10 | `manual_clean/v03` | Hand Build 3 | proved rotation coverage works |
-| 11 | `manual_clean/v06` | Hand Build 6 | tuned the patch guards |
-| 12 | `manual_clean/v04` | Hand Build 4 | ruled out template extraction |
-| 13 | `manual_clean/v05` | Hand Build 5 | ruled out alpha fitting |
-| 14 | `simple_morph_t/v15_fast3_a94` | The Shortcut That Backfired | failed both goals: slower than v14 and looser boxes; proved the OCR veto is load bearing |
-| 15 | `simple_morph_t/v09_one_color` | One Color Panel | uniform panels achieved |
-| 16 | `simple_morph_t/v08_simple_transparent` | First Transparency | right direction, rough color |
-| 17 | `rect_algo/v07_glyph_masks` | Glyph First | right granularity, wrong unit |
-| 18 | `simple_morph_t/v07` | Sticker Round 7 | best opaque sticker |
-| 19 | `simple_morph_t/v06` | Sticker Round 6 | stable box union |
-| 20 | `simple_morph_t/v05` | Sticker Round 5 | twin box merge learned |
-| 21 | `simple_morph_t/v04` | Sticker Round 4 | padding lesson learned |
-| 22 | `simple_morph_t/v03` | Sticker Round 3 | percentile sampling tried |
-| 23 | `simple_morph_t/v02` | Sticker Round 2 | sampling region lesson |
-| 24 | `simple_morph_t/v01` | Sticker Round 1 | text removal proven possible |
-| 25 | `rect_algo/v05_round` | Rounded Panel | aesthetics without coverage |
-| 26 | `rect_algo/v04_tri` | Triangle Rule | overcoverage is also failure |
-| 27 | `rect_algo/v02` | Geometry Sketch 2 | priors reduce drift |
-| 28 | `rect_algo/v03` | Geometry Sketch 3 | edge snap fails softly |
-| 29 | `rect_algo/v01` | Geometry Sketch 1 | fixed rules cannot generalize |
-| 30 | `clean_v5` | LaMa Generation | best inpainting era output |
-| 31 | `clean_v4` | LaMa Generation | texture blur regression found |
-| 32 | `clean_v2` | LaMa Generation | stragglers identified |
-| 33 | `clean_v1` | LaMa Generation | the original baseline |
-| 34 | `template_match_lama/v01` | Hybrid First Pass | flat marks only |
-| 35 | `replicate` | Template Check | clean negative, saved work |
-| 36 | `unmix` | Decomposition Try | JPEG kills separation |
-| 37 | `brushnet/v01` | Diffusion Challenger | lost everything at 20x cost |
-| 38 | `rect_algo/v06_user_script` | Borrowed Script | wrong color basis |
-| 39 | `morph_simple` | Simple Probe | cheap dead end confirmed |
-| 40 | `morph` | The Probe | ragged masks |
-| 41 | `morph_v2` | Probe Second Cut | faster, still ragged |
-| 42 | `morph_transparent` | Transparent Probe | halos everywhere |
-| 43 | `exact_invert/v01_flat` | Flat Alpha Inversion | plausible looking, wrong pixels |
-| 44 | `exact_invert/v02_perpixel` | Per Pixel Inversion | noise amplified 30x |
-| 45 | `manual_clean/v07_invert_a28` | Inversion by Hand | worst kind of failure: confidently wrong |
-
-Both tables describe the same forty five directories. Every attempt was free in money because none rented anything; the only currencies spent were days and disk. Quality improvements across the middle rows were free upgrades too: the jump from sticker to locked recipe changed the pixels completely without changing the bill, and no hardware from the ladder above moves any row except BrushNet's.
+| rank | iteration | name | what it achieved | what it still lacked | verdict |
+|---|---|---|---|---|---|
+| 1 | `simple_morph_t/v16_batch40_a94_v2` | Production Proof | the shipped CLI reproduced the winning recipe on all 40 images, max pixel diff 0.81 which is JPEG rounding | nothing | shipped |
+| 2 | **`simple_morph_t/v14_batch40_a94_v2` ★** | **The Locked Recipe** | badge ghost gone, vertical wardrobe strip fully covered, text unreadable at alpha 0.94 on all 40 | nothing | locked |
+| 3 | `template_match_lama/v02_reddit` | Hybrid, Reddit Rules | best grain continuation through erased strokes ever achieved locally | grain still loses to the paid service on wood | proved concept |
+| 4 | `simple_morph_t/v13_batch40_a94_v2` | Glyph Sampler | purple badge sampled near white instead of purple; ghost killed | vertical strips still half covered | proved fix |
+| 5 | `simple_morph_t/v11_alpha_ladder` | Ladder Part Two | rendered opacities 0.86 to 1.00; picked 0.94 as permanently unreadable yet watermark like | nothing relevant | produced lock |
+| 6 | `simple_morph_t/v10_alpha_ladder` | Ladder Part One | rendered 0.40 to 0.85 and showed every panel traceable below 0.90 | upper half of the ladder unresolved | ruled out half |
+| 7 | `simple_morph_t/v12_batch40_a94` | The Forty | first complete end to end batch at 0.94 across 40 real images | purple badge text ghosted through; vertical strip only half covered | exposed failures |
+| 8 | `manual_clean/v01` | Hand Build 1 | proved brightest 20 percent sampling removes badge ghost on the test image | one image, by hand | proved fix |
+| 9 | `manual_clean/v02` | Hand Build 2 | proved median patch before paint erases strokes under a matching panel | one image, by hand | proved fix |
+| 10 | `manual_clean/v03` | Hand Build 3 | proved rotation union covers the full vertical strip | one image, by hand | proved fix |
+| 11 | `manual_clean/v06` | Hand Build 6 | calibrated patch guards: replace above delta lum 15, skip above lum 210 | values chosen by eye, later codified | calibrated |
+| 12 | `manual_clean/v04` | Hand Build 4 | showed cross image templates never align stably | closed off the exact recovery input path | negative result |
+| 13 | `manual_clean/v05` | Hand Build 5 | showed alpha fits never converge inside clamp ceilings | killed per pixel inversion for good | negative result |
+| 14 | `simple_morph_t/v15_fast3_a94` | The Shortcut That Backfired | tested YOLO only rotated passes without the OCR veto | slower than v14, 470 vs 427 ms per image, and looser: panel bled over door edge | rejected optimization |
+| 15 | `simple_morph_t/v09_one_color` | One Color Panel | achieved uniform single color panels per mark | which alpha to paint at was still unknown | partial |
+| 16 | `simple_morph_t/v08_simple_transparent` | First Transparency | introduced blend instead of opaque fill | color basis too crude to match marks | partial |
+| 17 | `rect_algo/v07_glyph_masks` | Glyph First | tested glyph sized panels against union boxes | seams between letters made patchwork | dead end |
+| 18 | `simple_morph_t/v07` | Sticker Round 7 | best possible opaque sticker after six lessons | still reads as pasted on, zero transparency | superseded |
+| 19 | `simple_morph_t/v06` | Sticker Round 6 | stabilized one box per mark via union strategy | opacity untouched | superseded |
+| 20 | `simple_morph_t/v05` | Sticker Round 5 | learned twin stamp merge behavior | double boxes until merged | superseded |
+| 21 | `simple_morph_t/v04` | Sticker Round 4 | swept padding values systematically | padding is not why panels looked wrong | superseded |
+| 22 | `simple_morph_t/v03` | Sticker Round 3 | tried percentile color sampling | marginal change only | superseded |
+| 23 | `simple_morph_t/v02` | Sticker Round 2 | tightened sampling region inside mask | no visible improvement | superseded |
+| 24 | `simple_morph_t/v01` | Sticker Round 1 | first attempt: median fill over detection box | letters vanished completely; panel looked pasted on | started everything |
+| 25 | `rect_algo/v05_round` | Rounded Panel | tested rounded corner aesthetics | no coverage improvement | dead end |
+| 26 | `rect_algo/v04_tri` | Triangle Rule | tested triangular coverage shapes | covered marks plus half the wall | dead end |
+| 27 | `rect_algo/v02` | Geometry Sketch 2 | added aspect ratio priors to placement | drift reduced but never eliminated | dead end |
+| 28 | `rect_algo/v03` | Geometry Sketch 3 | snapped edges to scene lines | snapped to window frames instead | dead end |
+| 29 | `rect_algo/v01` | Geometry Sketch 1 | hand written placement offsets | boxes missed marks on varied aspect ratios | dead end |
+| 30 | `clean_v5` | LaMa Generation | best inpainting era threshold generation | faint residue survived; invented fills unverifiable | superseded |
+| 31 | `clean_v4` | LaMa Generation | widened masks so fills cover glyph edges | texture areas blurred badly | superseded |
+| 32 | `clean_v2` | LaMa Generation | raised OCR corroboration bar | real faint marks skipped as stragglers | superseded |
+| 33 | `clean_v1` | LaMa Generation | original working detect and inpaint baseline | invented window fills, trust ceiling | superseded |
+| 34 | `template_match_lama/v01` | Hybrid First Pass | validated template match plus LaMa on flat marks | textured marks poor, cost high | partial |
+| 35 | `replicate` | Template Check | proved cross image alpha templates unusable | saved weeks of dead end work | negative result |
+| 36 | `unmix` | Decomposition Try | tested layer separation unmixing | JPEG compression makes separation impossible | dead end |
+| 37 | `brushnet/v01` | Diffusion Challenger | benchmarked the best free diffusion inpainter honestly | lost all three comparisons at 20x cost | negative result |
+| 38 | `rect_algo/v06_user_script` | Borrowed Script | tested community script geometry rules | its color basis assumes different watermarks | dead end |
+| 39 | `morph_simple` | Simple Probe | cheapest morphology test first | thin strokes dropped, recall too low | dead end |
+| 40 | `morph` | The Probe | morphology alone as mask source | ragged masks unusable downstream | dead end |
+| 41 | `morph_v2` | Probe Second Cut | tighter kernels for cleaner masks | faster but equally ragged | dead end |
+| 42 | `morph_transparent` | Transparent Probe | soft alpha over morph masks | halos on every edge | dead end |
+| 43 | `exact_invert/v01_flat` | Flat Alpha Inversion | single global alpha inversion | dark streaks at stroke edges | confidently wrong |
+| 44 | `exact_invert/v02_perpixel` | Per Pixel Inversion | per pixel alpha map inversion | noise amplified up to 30 times | confidently wrong |
+| 45 | `manual_clean/v07_invert_a28` | Inversion by Hand | inversion at measured alpha 0.28 | dark streaks again; looks plausible, is wrong | confidently wrong |
 
 ## Validation
 
