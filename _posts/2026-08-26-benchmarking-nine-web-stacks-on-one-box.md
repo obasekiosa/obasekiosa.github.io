@@ -5,9 +5,9 @@ categories: [Engineering, Performance]
 tags: [benchmarking, elixir, phoenix, liveview, go, node]
 ---
 
-Before rebuilding my main app I wanted numbers instead of folklore. Not synthetic hello-worlds -- the same five workloads my app actually does: render a DB-backed page, serve JSON, take events over WebSockets and write them to Postgres, broadcast to a room, and sit idle holding thousands of connections. Nine stacks, one box, same wire protocols everywhere.
+Before rebuilding my main app I wanted numbers instead of folklore. Not synthetic hello-worlds the same five workloads my app actually does: render a DB-backed page, serve JSON, take events over WebSockets and write them to Postgres, broadcast to a room, and sit idle holding thousands of connections. Nine stacks, one box, same wire protocols everywhere.
 
-This post stands alone, but it is also the measurement backbone for two deployment-tool write-ups ([OpenShip](/posts/testing-openship-locally/) and [Dokku](/posts/living-with-dokku/)) -- the platforms carried these apps; this post is about the apps themselves.
+This post stands alone, but it is also the measurement backbone for two deployment-tool write-ups ([OpenShip](/posts/testing-openship-locally/) and [Dokku](/posts/living-with-dokku/)) the platforms carried these apps; this post is about the apps themselves.
 
 ## The nine stacks
 
@@ -15,7 +15,7 @@ This post stands alone, but it is also the measurement backbone for two deployme
 |---|---|---|---|
 | 1 | LiveView | Phoenix + LiveView + Bandit + Ecto | Elixir |
 | 2 | Raw Phoenix Channels | Phoenix endpoints + channels, no LiveView | Elixir |
-| 3 | Raw Cowboy | Cowboy 2.18 + Postgrex only -- BEAM's floor | Elixir |
+| 3 | Raw Cowboy | Cowboy 2.18 + Postgrex only BEAM's floor | Elixir |
 | 4 | Go net/http | stdlib + coder/websocket + pgx | Go |
 | 5 | Go fasthttp | fasthttp + fasthttp/websocket + pgx | Go |
 | 6 | Go raw TCP | hand-rolled RFC6455 frames + pgx | Go |
@@ -40,28 +40,28 @@ Hardware, since every number below lives or dies by it:
 
 ```mermaid
 flowchart LR
-    subgraph host["load generators"]
-        K6[k6 · WebSocket scenarios]
-        AB[ab · HTTP c50]
-        PP[headless Chromium<br/>DOM assertions]
-    end
-    subgraph vm["VirtualBox VM · 2 vCPU · 8 GB"]
-        NG[dokku nginx vhosts]
-        subgraph dock["containers"]
-            A[shop: LiveView + channels]
-            B[goshop · gofast · goraw]
-            C[uwsbench · expressbench · nextbench]
-            D[exraw: Cowboy + Postgrex]
-            PG[(shared Postgres)]
-        end
-    end
-    K6 --> NG --> dock
-    AB --> NG --> dock
-    PP --> NG
-    K6 -. direct :4000 .-> dock
-    B --- PG
-    A --- PG
-    D --- PG
+ subgraph host["load generators"]
+ K6[k6 · WebSocket scenarios]
+ AB[ab · HTTP c50]
+ PP[headless Chromium<br/>DOM assertions]
+ end
+ subgraph vm["VirtualBox VM · 2 vCPU · 8 GB"]
+ NG[dokku nginx vhosts]
+ subgraph dock["containers"]
+ A[shop: LiveView + channels]
+ B[goshop · gofast · goraw]
+ C[uwsbench · expressbench · nextbench]
+ D[exraw: Cowboy + Postgrex]
+ PG[(shared Postgres)]
+ end
+ end
+ K6 --> NG --> dock
+ AB --> NG --> dock
+ PP --> NG
+ K6 -. direct :4000 .-> dock
+ B --- PG
+ A --- PG
+ D --- PG
 ```
 
 Method rules that mattered more than any tool choice:
@@ -85,14 +85,14 @@ Method rules that mattered more than any tool choice:
 | Express | 296 | 1258 | 452 |
 | Next.js prod | 93 | 94 | 171 |
 
-\* same-session pair: `/counter` 1348 vs `/store` (plain Phoenix) 800 -- session variance runs ±40%, so only same-window deltas count.
+\* same-session pair: `/counter` 1348 vs `/store` (plain Phoenix) 800 session variance runs ±40%, so only same-window deltas count.
 † raw Cowboy's DB-backed routes ran suspiciously slow after a late refactor; suspected connection-pool sizing issue, listed as a re-bench item below. Its non-DB numbers stand.
 
 Three findings:
 
-1. **µWS owns the generic request path**, fasthttp owns the static-ish one (4796 plain -- Go's deficit was `net/http`, not the language).
+1. **µWS owns the generic request path**, fasthttp owns the static-ish one (4796 plain Go's deficit was `net/http`, not the language).
 2. **Next's bottleneck is rendering, not I/O**: plain SSR ≈ DB SSR (94 vs 93 rps). React RSC serialization is ~7–10× heavier per render than HEEx.
-3. **LiveView holds its own against tuned Go** on a stateful page (1348 vs 1136) -- signed sessions and HEEx diffing included.
+3. **LiveView holds its own against tuned Go** on a stateful page (1348 vs 1136) signed sessions and HEEx diffing included.
 
 ## WebSocket event → DB write
 
@@ -115,7 +115,7 @@ The workload my app actually lives on: 50 persistent connections, each firing ev
 
 The interesting rows are the pairs. **The proxy tax is the single biggest lever in the whole exercise**: raw Cowboy drops 1398→670 (2.1×), LiveView 1201→659 (1.8×), and adds 40–50 ms to every median. Before blaming your framework for WS latency, measure what your reverse proxy is doing.
 
-And the framework tax is real too: **LiveView's protocol machinery costs ≈31% versus bare Phoenix Channels** (740 vs 1076/s, same window). That is the price of signed tokens and DOM diffing -- and whether it's worth paying depends entirely on whether you want the diffing.
+And the framework tax is real too: **LiveView's protocol machinery costs ≈31% versus bare Phoenix Channels** (740 vs 1076/s, same window). That is the price of signed tokens and DOM diffing and whether it's worth paying depends entirely on whether you want the diffing.
 
 ## Fan-out: everyone ties, and that is the finding
 
@@ -132,7 +132,7 @@ And the framework tax is real too: **LiveView's protocol machinery costs ≈31% 
 | raw Phoenix Channels | 4913 |
 | Go fasthttp | 4944 |
 
-Seven runtimes, spread of 31 msgs/s (~0.6%). When seven different languages land on the same ceiling, **the ceiling belongs to the box** -- nginx connection limits plus co-located load-generator CPU -- not to any of them. Language choice did not matter here; it will matter again above ~10k concurrent fan-out targets, which this 2-vCPU lab cannot produce.
+Seven runtimes, spread of 31 msgs/s (~0.6%). When seven different languages land on the same ceiling, **the ceiling belongs to the box** nginx connection limits plus co-located load-generator CPU not to any of them. Language choice did not matter here; it will matter again above ~10k concurrent fan-out targets, which this 2-vCPU lab cannot produce.
 
 ## Memory
 
@@ -154,7 +154,7 @@ But for a WebSocket app, the number that predicts capacity is **cost per idle co
 | Go (raw/fasthttp/coder) | 1.1–4.4 GB |
 | LiveView | ~2.7 GB |
 
-For a chat/broadcast product holding parked tabs open, that column can pick your stack for you. (Caveat: idle cost ≠ active cost -- once frames flow, buffers converge somewhat.)
+For a chat/broadcast product holding parked tabs open, that column can pick your stack for you. (Caveat: idle cost ≠ active cost once frames flow, buffers converge somewhat.)
 
 One BEAM-specific quirk worth knowing: idle LiveView connections crept from ~27 KB to ~53 KB between the 5k and 10k samples because GC fires on activity, and idle conns only exchange heartbeats. It stabilizes; it just doesn't shrink back eagerly.
 
@@ -167,7 +167,7 @@ Running pgbench writes and HTTP traffic simultaneously on the same box:
 | Cowboy-era shop | −21% | −21% | symmetric, mild |
 | Bandit shop | −60% | −44% | ugly (single sample) |
 
-One sample, grain of salt -- but plausible mechanically: Bandit parses HTTP in pure Elixir and burns CPU under contention, while Cowboy leaned on a C NIF. If your box shares duties (app + DB on one machine), this axis deserves its own test day.
+One sample, grain of salt but plausible mechanically: Bandit parses HTTP in pure Elixir and burns CPU under contention, while Cowboy leaned on a C NIF. If your box shares duties (app + DB on one machine), this axis deserves its own test day.
 
 ## Scoreboard
 
@@ -179,7 +179,7 @@ One sample, grain of salt -- but plausible mechanically: Bandit parses HTTP in p
 | WS ingest (direct, BEAM floor) | raw Cowboy 1398/s* | Go raw 935/s |
 | Cheapest idle conns | µWS (~40 B) | Express (~3 KB) |
 | Lowest whole-app RSS | Go net/http (7 MiB) | fasthttp/goraw (8–13 MiB) |
-| Fan-out | tie -- box ceiling | everyone |
+| Fan-out | tie box ceiling | everyone |
 | Interactive UI economics | LiveView (diffs + sessions free) | – |
 | Deploy friction (the hidden axis) | Go/Node single binaries | µWS needs glibc + Node ≥22 |
 
@@ -189,16 +189,16 @@ One sample, grain of salt -- but plausible mechanically: Bandit parses HTTP in p
 
 - **Socket-heavy broadcast app**: µWS if the team tolerates its packaging quirks (glibc-only prebuilts, Node ≥22); fasthttp otherwise. Both leave everything else behind on ingest.
 - **Productivity-first, UI-driven app**: Phoenix/LiveView. You pay ~2× memory and a measurable protocol tax, and you get server-rendered interactivity, channels, and one language end to end. The raw-channel result shows the tax buys something specific.
-- **Lean API services**: Go -- either flavor. Predictable floors, boring deploys.
+- **Lean API services**: Go either flavor. Predictable floors, boring deploys.
 - **SSR marketing/catalog surfaces**: Next works, but know that its floor is render-bound; cache aggressively or split static from dynamic.
 
 ## Caveats, honestly held
 
 - One 2-vCPU VirtualBox guest shared with the load generators. Absolute numbers are hobby-hardware scale; the *rankings* transferred consistently across every re-test, which is what I was after.
-- k6 itself OOMs around 7k VUs in-VM -- ceilings above ~10k connections are loadgen-bound, not app-bound.
+- k6 itself OOMs around 7k VUs in-VM ceilings above ~10k connections are loadgen-bound, not app-bound.
 - Several numbers are single samples from quiet windows; the host-starvation episode is documented precisely because it nearly poisoned cross-session comparisons.
 
-## TODO -- re-bench queue
+## TODO re-bench queue
 
 - [ ] raw Cowboy WS→DB after the Cowboy ≥2.14 handler-callback migration (both proxied and direct; the 1398/s direct figure predates it)
 - [ ] raw Cowboy DB-backed pages (pool-size suspicion behind the 398 rps outlier)
