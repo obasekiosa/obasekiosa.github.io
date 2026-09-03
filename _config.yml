@@ -41,6 +41,7 @@ social:
     - https://twitter.com/seki_io # change to your twitter homepage
     - https://github.com/obasekiosa # change to your github homepage
     - https://www.linkedin.com/in/obasekiosa
+    - https://seki.sh # products
 
 google_site_verification: "GTM-NGLQWZS4" # fill in to your verification string
 
@@ -71,7 +72,7 @@ theme_mode: # [light|dark]
 img_cdn:
 
 # the avatar on sidebar, support local or CORS resources
-avatar: "https://avatars.githubusercontent.com/u/12957252?v=4"
+avatar: "/assets/img/favicons/seki.svg"
 
 # boolean type, the global switch for TOC in posts.
 toc: true

@@ -95,7 +95,11 @@
             rel="{{ link_types }}"
           {% endunless %}
         >
-          <i class="{{ entry.icon }}"></i>
+          {% if entry.icon contains '/' %}
+            <img src="{{ entry.icon | relative_url }}" alt="{{ entry.type }}" width="18" height="18" style="vertical-align: middle; border-radius: 3px; display: inline-block;" />
+          {% else %}
+            <i class="{{ entry.icon }}"></i>
+          {% endif %}
         </a>
       {% endif %}
     {% endfor %}

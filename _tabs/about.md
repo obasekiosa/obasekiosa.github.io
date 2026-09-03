@@ -32,3 +32,4 @@ I write here about the systems I build and the rabbit holes I fall into.
 - X/Twitter: [seki_io](https://twitter.com/seki_io)
 - LinkedIn: [obasekiosa](https://www.linkedin.com/in/obasekiosa)
 - Email: [obasekiosa@gmail.com](mailto:obasekiosa@gmail.com)
+- Products: [<img src="/assets/img/favicons/seki.svg" alt="" width="16" height="16" style="display: inline-block; vertical-align: middle; border-radius: 3px;" /> seki.sh](https://seki.sh)
