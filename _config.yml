@@ -72,7 +72,7 @@ theme_mode: # [light|dark]
 img_cdn:
 
 # the avatar on sidebar, support local or CORS resources
-avatar: "/assets/img/favicons/seki.svg"
+avatar: "https://avatars.githubusercontent.com/u/12957252?v=4"
 
 # boolean type, the global switch for TOC in posts.
 toc: true
