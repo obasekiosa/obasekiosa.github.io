@@ -83,5 +83,31 @@ layout: compress
     {% endif %}
 
     {% include_cached search-loader.html %}
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        function markExternal(a) {
+          if (a.hostname && a.hostname !== location.hostname) {
+            a.setAttribute('target', '_blank');
+            var rel = a.getAttribute('rel') || '';
+            if (rel.indexOf('noopener') === -1) {
+              a.setAttribute('rel', (rel ? rel + ' ' : '') + 'noopener noreferrer');
+            }
+          }
+        }
+        document.querySelectorAll('a[href^="http://"], a[href^="https://"], a[href^="//"]').forEach(markExternal);
+        var obs = new MutationObserver(function(mutations) {
+          mutations.forEach(function(m) {
+            m.addedNodes.forEach(function(n) {
+              if (n.nodeType === 1) {
+                if (n.tagName === 'A') markExternal(n);
+                n.querySelectorAll && n.querySelectorAll('a[href^="http://"], a[href^="https://"], a[href^="//"]').forEach(markExternal);
+              }
+            });
+          });
+        });
+        obs.observe(document.body, { childList: true, subtree: true });
+      });
+    </script>
   </body>
 </html>
